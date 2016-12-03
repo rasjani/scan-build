@@ -19,11 +19,13 @@ set -o xtrace
 # ├── run.sh
 # ├── expected.json
 # └── src
+#    ├── empty.s
 #    └── empty.c
 
 root_dir=$1
 mkdir -p "${root_dir}/src"
 
+touch "${root_dir}/src/empty.s"
 touch "${root_dir}/src/empty.c"
 
 build_file="${root_dir}/run.sh"
@@ -35,6 +37,7 @@ set -o xtrace
 
 "\$CC" -c -o src/empty.o -Dver=1 src/empty.c;
 "\$CXX" -c -o src/empty.o -Dver=2 src/empty.c;
+"\$CC" -c -o src/empty.o -x assembler-with-cpp src/empty.s;
 
 cd src
 "\$CC" -c -o empty.o -Dver=3 empty.c;
@@ -56,6 +59,12 @@ cat >> "${root_dir}/expected.json" << EOF
   "command": "c++ -c -o src/empty.o -Dver=2 src/empty.c",
   "directory": "${root_dir}",
   "file": "src/empty.c"
+}
+,
+{
+  "command": "cc -c -o src/empty.o -x assembler-with-cpp src/empty.s",
+  "directory": "${root_dir}",
+  "file": "src/empty.s"
 }
 ,
 {

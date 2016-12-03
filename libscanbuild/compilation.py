@@ -284,10 +284,15 @@ def classify_source(filename, c_compiler=True):
         '.CC': 'c++',
         '.cp': 'c++',
         '.cpp': 'c++',
+        '.CPP': 'c++',
         '.cxx': 'c++',
         '.c++': 'c++',
         '.C++': 'c++',
-        '.txx': 'c++'
+        '.txx': 'c++',
+        '.s': 'assembler',
+        '.asm': 'assembler',
+        '.S': 'assembler-with-cpp',
+        '.sx': 'assembler-with-cpp'
     }
 
     __, extension = os.path.splitext(os.path.basename(filename))
