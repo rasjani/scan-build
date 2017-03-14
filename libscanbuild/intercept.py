@@ -154,6 +154,35 @@ def intercept_compiler_wrapper(_, execution):
         logging.warning(message_prefix, 'io problem')
 
 
+def expand_cmd_with_response_files(cmd):
+    """ Expand's response file parameters into actual parameters.
+
+    MSVC's cl and clang-cl has functionality to prevent too long command lines
+    by reading options from so called temporary "response" files. These files
+    are ascii encoded and can contain compiler and linker flags and/or
+    compilation units.
+
+    For example, QT's qmake generates nmake based makefiles where the response
+    file contains all compilation units. """
+
+    def is_response_file(param):
+        """ checks if the given command line argument is response file  """
+        return param[0] == '@' and os.path.isfile(param[1:])
+
+    def from_response_file(filename):
+        """ Read and return command line argument list from response file.
+
+        Might throw IOException if file read operation fails. """
+        with open(filename[1:], 'r') as f:
+            return [arg.strip() for arg in f.read().split()]
+
+    def update_if_needed(arg):
+        """ returns [n,] thats either read from response or has single arg """
+        return from_response_file(arg) if is_response_file(arg) else [arg]
+
+    return [n for row in [update_if_needed(arg) for arg in cmd] for n in row]
+
+
 def write_exec_trace(filename, entry):
     """ Write execution report file.
 
@@ -163,7 +192,8 @@ def write_exec_trace(filename, entry):
     :param filename:    path to the output execution trace file,
     :param entry:       the Execution object to append to that file. """
 
-    call = {'pid': entry.pid, 'cwd': entry.cwd, 'cmd': entry.cmd}
+    call = {'pid': entry.pid, 'cwd': entry.cwd,
+            'cmd': expand_cmd_with_response_files(entry.cmd)}
     with open(filename, 'w') as handler:
         json.dump(call, handler)
 
