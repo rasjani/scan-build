@@ -30,7 +30,7 @@ class InterceptUtilTest(unittest.TestCase):
             result = sut.parse_exec_trace(temp_file)
             self.assertEqual(input_one, result)
 
-    def test_expand_cmd_with_response_files(self):
+    def test_simple_expand_cmd_with_response_files(self):
         with libear.temporary_directory() as tmp_dir:
             response_file = os.path.join(tmp_dir, 'response.jom')
             with open(response_file, 'w') as response_file_handle:
@@ -38,6 +38,22 @@ class InterceptUtilTest(unittest.TestCase):
                 response_file_handle.write('        World!\n')
             cmd_input = ['echo', '@'+response_file]
             cmd_output = ['echo', 'Hello', 'World!']
+            self.assertEqual(cmd_output,
+                             sut.expand_cmd_with_response_files(cmd_input))
+
+    def test_complex_expand_cmd_with_response_files(self):
+        with libear.temporary_directory() as tmp_dir:
+            response_file = os.path.join(tmp_dir, 'response.jom')
+            with open(response_file, 'w') as response_file_handle:
+                response_file_handle.write('-DMY_STRING=\\\"IS\ COMPLEX\\\"\n')
+                response_file_handle.write('-DCAN_CONTAIN -DMULTIPLE\n')
+                response_file_handle.write('    source.cpp\n')
+            cmd_input = ['clang-cl', '-c', '@'+response_file]
+            cmd_output = ['clang-cl', '-c',
+                          '-DMY_STRING=\"IS COMPLEX\"',
+                          '-DCAN_CONTAIN',
+                          '-DMULTIPLE',
+                          'source.cpp']
             self.assertEqual(cmd_output,
                              sut.expand_cmd_with_response_files(cmd_input))
 

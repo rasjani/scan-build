@@ -16,6 +16,7 @@ import subprocess
 import sys
 
 ENVIRONMENT_KEY = 'INTERCEPT_BUILD'
+IS_WINDOWS = sys.platform in {'win32', 'cygwin'}
 
 Execution = collections.namedtuple('Execution', ['pid', 'cwd', 'cmd'])
 
@@ -30,7 +31,8 @@ def shell_split(string):
             return re.sub(r'\\(["\\])', r'\1', arg[1:-1])
         return re.sub(r'\\([\\ $%&\(\)\[\]\{\}\*|<>@?!])', r'\1', arg)
 
-    return [unescape(token) for token in shlex.split(string)]
+    return [unescape(token) for token in shlex.split(string, posix=not
+            IS_WINDOWS)]
 
 
 def run_build(command, *args, **kwargs):

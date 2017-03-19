@@ -31,7 +31,7 @@ import uuid
 
 from libear import build_libear, temporary_directory
 from libscanbuild import command_entry_point, wrapper_entry_point, \
-    wrapper_environment, run_build, run_command, Execution
+    wrapper_environment, run_build, run_command, Execution, shell_split
 from libscanbuild.arguments import parse_args_for_intercept_build
 from libscanbuild.compilation import Compilation, CompilationDatabase
 
@@ -174,7 +174,7 @@ def expand_cmd_with_response_files(cmd):
 
         Might throw IOException if file read operation fails. """
         with open(filename[1:], 'r') as f:
-            return [arg.strip() for arg in f.read().split()]
+            return [arg.strip() for arg in shell_split(f.read())]
 
     def update_if_needed(arg):
         """ returns [n,] thats either read from response or has single arg """
